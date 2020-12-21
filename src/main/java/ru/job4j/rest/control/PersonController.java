@@ -2,6 +2,7 @@ package ru.job4j.rest.control;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import ru.job4j.rest.model.Person;
 import ru.job4j.rest.repository.PersonRepository;
@@ -14,9 +15,11 @@ import java.util.stream.StreamSupport;
 @RequestMapping("/person")
 public class PersonController {
     private final PersonRepository persons;
+    private BCryptPasswordEncoder encoder;
 
-    public PersonController(final PersonRepository persons) {
+    public PersonController(PersonRepository persons, BCryptPasswordEncoder encoder) {
         this.persons = persons;
+        this.encoder = encoder;
     }
 
     @GetMapping("/")
@@ -35,9 +38,11 @@ public class PersonController {
         );
     }
 
-    @PostMapping("/")
+    @PostMapping("/sign-up")
     public ResponseEntity<Person> create(@RequestBody Person person) {
-        return new ResponseEntity<Person>(
+        String passwordEncoded = encoder.encode(person.getPassword());
+        person.setPassword(passwordEncoded);
+        return new ResponseEntity<>(
                 this.persons.save(person),
                 HttpStatus.CREATED
         );
@@ -45,6 +50,8 @@ public class PersonController {
 
     @PutMapping("/")
     public ResponseEntity<Void> update(@RequestBody Person person) {
+        String passwordEncoded = encoder.encode(person.getPassword());
+        person.setPassword(passwordEncoded);
         this.persons.save(person);
         return ResponseEntity.ok().build();
     }
