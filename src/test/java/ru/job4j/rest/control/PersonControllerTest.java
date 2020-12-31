@@ -7,6 +7,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.job4j.rest.RestApplication;
@@ -15,6 +16,7 @@ import ru.job4j.rest.repository.PersonRepository;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -30,6 +32,9 @@ class PersonControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private BCryptPasswordEncoder encoder;
 
     @Test
     @WithMockUser
@@ -51,7 +56,7 @@ class PersonControllerTest {
     @Test
     @WithMockUser
     void whenCreate() throws Exception {
-        mockMvc.perform(post("/person/")
+        mockMvc.perform(post("/person/sign-up")
                 .content("{\"login\":\"user\",\"password\":\"root\"}")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
@@ -59,7 +64,7 @@ class PersonControllerTest {
         ArgumentCaptor<Person> argument = ArgumentCaptor.forClass(Person.class);
         verify(store).save(argument.capture());
         assertThat(argument.getValue().getLogin(), is("user"));
-        assertThat(argument.getValue().getPassword(), is("root"));
+        assertTrue(encoder.matches("root", argument.getValue().getPassword()));
     }
 
     @Test
