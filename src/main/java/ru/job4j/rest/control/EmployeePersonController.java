@@ -2,17 +2,13 @@ package ru.job4j.rest.control;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import ru.job4j.rest.model.Employee;
 import ru.job4j.rest.model.Person;
 
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -27,21 +23,31 @@ public class EmployeePersonController {
     private static final String API_ID = "http://localhost:8080/person/{id}";
 
     @GetMapping("/")
-    public ResponseEntity<Employee> getEmployee() {
+    public ResponseEntity<Employee> getEmployee(@RequestHeader("Authorization") String token) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(token);
+        HttpEntity<Void> entity = new HttpEntity<>(headers);
         List<Person> accounts = rest.exchange(
                 API,
-                HttpMethod.GET, null, new ParameterizedTypeReference<List<Person>>() { }
+                HttpMethod.GET, entity, new ParameterizedTypeReference<List<Person>>() { }
         ).getBody();
         Employee employee = new Employee("Yugay", "9876543",
-                Timestamp.valueOf(LocalDateTime.now()), accounts);
+                null, accounts);
         return new ResponseEntity<>(employee, HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Person> getPersonById(@PathVariable int id) {
+    public ResponseEntity<Person> getPersonById(@PathVariable int id,
+                                                @RequestHeader("Authorization") String token) {
         Person person = new Person();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(token);
+        HttpEntity<Void> entity = new HttpEntity<>(headers);
         try {
-            person = rest.getForObject(API_ID, Person.class, id);
+            person = rest.exchange(
+                    API + id,
+                    HttpMethod.GET, entity, new ParameterizedTypeReference<Person>() { }
+            ).getBody();
         } catch (HttpClientErrorException ex)   {
             return new ResponseEntity<>(person, HttpStatus.NOT_FOUND);
         }
@@ -49,8 +55,12 @@ public class EmployeePersonController {
     }
 
     @PostMapping("/")
-    public ResponseEntity<Person> create(@RequestBody Person person) {
-        Person rsl = rest.postForObject(API, person, Person.class);
+    public ResponseEntity<Person> createPerson(@RequestBody Person person,
+                                               @RequestHeader("Authorization") String token) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(token);
+        HttpEntity<Person> entity = new HttpEntity<>(person, headers);
+        Person rsl = rest.postForObject(API + "sign-up", entity, Person.class);
         return new ResponseEntity<>(
                 rsl,
                 HttpStatus.CREATED
@@ -58,14 +68,25 @@ public class EmployeePersonController {
     }
 
     @PutMapping("/")
-    public ResponseEntity<Void> update(@RequestBody Person person) {
-        rest.put(API, person);
+    public ResponseEntity<Void> updatePerson(@RequestBody Person person,
+                                             @RequestHeader("Authorization") String token) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(token);
+        HttpEntity<Person> entity = new HttpEntity<>(person, headers);
+        rest.put(API, entity);
         return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable int id) {
-        rest.delete(API_ID, id);
+    public ResponseEntity<Void> deletePerson(@PathVariable int id,
+                                             @RequestHeader("Authorization") String token) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(token);
+        HttpEntity<Void> entity = new HttpEntity<>(headers);
+        rest.exchange(
+                API + id,
+                HttpMethod.DELETE, entity, new ParameterizedTypeReference<Void>() { }
+        );
         return ResponseEntity.ok().build();
     }
 }

@@ -20,6 +20,12 @@ public class Person {
         this.password = password;
     }
 
+    public Person(int id, String login, String password) {
+        this.id = id;
+        this.login = login;
+        this.password = password;
+    }
+
     public int getId() {
         return id;
     }

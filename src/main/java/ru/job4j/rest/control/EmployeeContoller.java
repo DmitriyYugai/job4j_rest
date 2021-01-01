@@ -2,12 +2,9 @@ package ru.job4j.rest.control;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import ru.job4j.rest.model.Employee;
-import ru.job4j.rest.model.Person;
 import ru.job4j.rest.repository.EmployeeRepository;
-import ru.job4j.rest.repository.PersonRepository;
 
 import java.util.List;
 import java.util.stream.Collectors;
