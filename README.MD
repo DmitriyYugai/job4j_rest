@@ -152,5 +152,5 @@ HTTP-запросы на REST-сервисы:<br><br>
 ![DELETE-запрос 6](img/usage/del6.PNG)<br><br>
 * На этом проверка данного REST-сервиса закончена. Аналогичным образом можно проверить и остальные REST-сервисы.
 ## Контакты
-Почта: studentnstu97@mail.ru<br>
+Почта: dmitry_yugay@mail.ru<br>
 Skype: live:.cid.9cdc925fb48220b4
